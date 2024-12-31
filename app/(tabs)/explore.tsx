@@ -1,109 +1,267 @@
-import { StyleSheet, Image, Platform } from 'react-native';
+import { Image, StyleSheet,TextInput, Text, View, ImageBackground, TouchableOpacity, ScrollView } from "react-native";
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+import  AntDesign  from "@expo/vector-icons/AntDesign";
+import { LinearGradient } from 'expo-linear-gradient';
+import React from "react";
+import { useNavigation } from "expo-router";
+import { Entypo } from "@expo/vector-icons";
+import {Animated} from 'react-native'
+import { useFocusEffect } from '@react-navigation/native';
 
-import { Collapsible } from '@/components/Collapsible';
-import { ExternalLink } from '@/components/ExternalLink';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-import { IconSymbol } from '@/components/ui/IconSymbol';
+const SignupScreen = () => {
+    const navigation = useNavigation();
+    
+    // Animation values
+    const fadeAnim = React.useRef(new Animated.Value(0)).current;
+    const slideAnim = React.useRef(new Animated.Value(-100)).current;
+    const scaleAnim = React.useRef(new Animated.Value(0.3)).current;
+    const slideBottomAnim = React.useRef(new Animated.Value(100)).current;
+    const floatAnim = React.useRef(new Animated.Value(0)).current;
 
-export default function TabTwoScreen() {
+    // Reset and start animations
+    const startAnimations = () => {
+        // Reset all animation values
+        fadeAnim.setValue(100);
+        slideAnim.setValue(-100);
+        scaleAnim.setValue(0.);
+        slideBottomAnim.setValue(100);
+        floatAnim.setValue(0);
+
+        // Start entrance animations
+        Animated.parallel([
+            Animated.timing(fadeAnim, {
+                toValue: 1,
+                duration: 1000,
+                useNativeDriver: true,
+            }),
+            Animated.timing(slideAnim, {
+                toValue: 0,
+                duration: 800,
+                useNativeDriver: true,
+            }),
+            Animated.spring(scaleAnim, {
+                toValue: 1,
+                tension: 10,
+                friction: 2,
+                useNativeDriver: true,
+            }),
+        ]).start();
+    };
+
+    // Use useFocusEffect instead of useEffect
+    useFocusEffect(
+        React.useCallback(() => {
+            // This will run every time the screen comes into focus
+            startAnimations();
+
+            // Start floating animation
+            const startFloatingAnimation = () => {
+                Animated.sequence([
+                    Animated.timing(floatAnim, {
+                        toValue: 1,
+                        duration: 2000,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(floatAnim, {
+                        toValue: 0,
+                        duration: 2000,
+                        useNativeDriver: true,
+                    }),
+                    Animated.timing(slideBottomAnim, {
+                      toValue: 0,
+                      duration: 800,
+                      useNativeDriver: true,
+                  }),
+                ]).start(() => startFloatingAnimation());
+            };
+
+            startFloatingAnimation();
+
+            // Cleanup when screen loses focus
+            return () => {
+                fadeAnim.stopAnimation();
+                slideAnim.stopAnimation();
+                slideBottomAnim.stopAnimation();
+                scaleAnim.stopAnimation();
+                floatAnim.stopAnimation();
+            };
+        }, []) // Empty dependency array means this effect runs on every focus
+    );
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Explore</ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image source={require('@/assets/images/react-logo.png')} style={{ alignSelf: 'center' }} />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Custom fonts">
-        <ThemedText>
-          Open <ThemedText type="defaultSemiBold">app/_layout.tsx</ThemedText> to see how to load{' '}
-          <ThemedText style={{ fontFamily: 'SpaceMono' }}>
-            custom fonts such as this one.
-          </ThemedText>
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/versions/latest/sdk/font">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user's current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful <ThemedText type="defaultSemiBold">react-native-reanimated</ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+        <ScrollView keyboardShouldPersistTaps="handled">
+            <Animated.View 
+                style={[
+                    styles.topImageContainer,
+                    {
+                        opacity: fadeAnim,
+                        transform: [{ translateY: slideAnim }]
+                    }
+                ]}
+            >
+                <Image
+                    source={require("D:/Gencare/MyProject/assets/images/topVector.png")}
+                    style={styles.topImage}
+                />
+            </Animated.View>
+            <View>
+                <Text style={styles.createAccount}>Create Your Account</Text>
+            </View>
+            <View style = {styles.inputContainer}>
+                <FontAwesome name="user" size={24} color="#9A9A9A" style={styles.inputIcon} />
+                <TextInput style={styles.textInput} placeholder="Username" />
+            </View>
+            <View style = {styles.inputContainer}>
+                <FontAwesome name="lock" size={24} color="#9A9A9A" style={styles.inputIcon} />
+                <TextInput style={styles.textInput} placeholder="Password" secureTextEntry/>
+            </View>
+            <View style = {styles.inputContainer}>
+                <AntDesign name="mail" size={24} color="#9A9A9A" style={styles.inputIcon} />
+                <TextInput style={styles.textInput} placeholder="E-mail" />
+            </View>
+            <View style = {styles.inputContainer}>
+                <AntDesign name="mobile1" size={24} color="#9A9A9A" style={styles.inputIcon} />
+                <TextInput style={styles.textInput} placeholder="Mobile" />
+            </View>
+
+            <View style={styles.createButtonContainer}>
+                <Text style={styles.signIn}>Create</Text>
+                <LinearGradient
+                    colors = {["#F97794", "#623AA2"]}
+                    style={styles.linearGradient}>
+                    <AntDesign name="arrowright" size={24} color="#FFFFFF" />
+                </LinearGradient>
+            </View>
+            <View style={styles.footerContainer}>
+                <Text style={styles.footerText}>Or create using..</Text>
+                <View style={styles.socialMediaContainer}>
+                    <AntDesign name="google" size={30} color="#9A9A9A" style={styles.socialMediaIcon} />
+                    <Entypo name="facebook-with-circle" size={30} color="blue" style={styles.socialMediaIcon} />
+                    <AntDesign name="twitter" size={30} color="lightblue" style={styles.socialMediaIcon} />
+                </View>
+            </View>
+        </ScrollView>
+
+        <Animated.View 
+            style={[
+                styles.leftVectorContainer,
+                {
+                    opacity: fadeAnim,
+                    transform: [{ scale: scaleAnim },
+                      { translateY: slideBottomAnim }
+                    ]
+                }
+            ]}
+        >
+            <ImageBackground
+                source={require("D:/Gencare/MyProject/assets/images/Vector 2.png")}
+                style={styles.leftVectorImage}
+            />
+        </Animated.View>
+    </View>
   );
-}
+};
+
+export default SignupScreen;
 
 const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  container: {
+    backgroundColor: "#F5F5F5",
+    flex: 1,
+    position: "relative",
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  topImageContainer: {},
+  topImage: {
+    width: "100%",
+    height: 130,
   },
+    helloContainer: {},
+    helloText: {
+        textAlign: "center",
+        fontSize: 70,
+        fontWeight: "500",
+        color: "#262626",
+  },
+  createAccount: {
+    textAlign: "center",
+    fontSize: 30,
+    color:"#262626",
+    marginBottom: 30,
+    fontWeight: 400,
+  },
+  inputContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginHorizontal: 40,
+    marginVertical: 20,
+    borderRadius: 20,
+    backgroundColor: "#FFFFFF",
+    elevation: 10,
+    height: 50,
+  },
+  inputIcon: {
+    marginLeft: 15,
+    marginRight: 5,
+  },
+  textInput: {
+    flex: 1, 
+  },
+
+    createButtonContainer: {
+        flexDirection: "row",
+        marginTop: 20,
+        justifyContent: "flex-end",
+        width: "90%",
+
+    },
+    signIn:{
+        color: "#262626",
+        fontSize: 25,
+        fontWeight: "bold",
+    },
+    linearGradient: {
+        width: 56,
+        height: 34,
+        borderRadius: 17,
+        justifyContent: "center",
+        alignItems: "center",
+        marginHorizontal: 10,
+    },
+    footerText: {
+        textAlign: "center",
+        color: "#262626",
+        fontSize: 18,
+        marginTop: 20,
+    },
+    leftVectorContainer: {
+        position: "absolute",
+        bottom: 0,
+        left: 0,
+        
+    },
+    leftVectorImage: {
+        width: 200,
+        height: 350,
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+    },
+
+    footerContainer: {
+        marginTop: 20,
+    },
+socialMediaContainer: {
+    display:"flex",
+    flexDirection: "row",
+    justifyContent: "center",
+},
+socialMediaIcon: {
+    backgroundColor: "#FFFFFF",
+    elevation: 10,
+    margin: 10,
+    padding: 10,
+    borderRadius: 50,
+},
+
 });
